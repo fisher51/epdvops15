@@ -1,0 +1,41 @@
+name: buttontextoutput
+
+on:
+  workflow_dispatch:
+    inputs:
+      textfield:
+        description: 'Main text field'     
+        required: true
+        default: 'Enter text here'
+      textfield_opt:
+        description: 'Optional text field'
+      timestamp:
+        description: 'Timestamp'
+        required: true
+        default: 'Yes or No'
+      
+
+jobs:
+  createfile:
+    runs-on: ubuntu-latest
+    steps:
+      - run: mkdir -p /tmp/atf
+      - name: 'firstfield'
+        run: |
+          echo "${{ github.event.inputs.textfield }}" > /tmp/atf/outfile.txt
+      - name: 'second field'
+        if: "${{ github.event.inputs.textfield_opt != null }}"
+        run: |
+           echo "${{ github.event.inputs.textfield_opt }}" >> /tmp/atf/outfile.txt
+      - name: 'timestampcheck'
+        if: "${{ github.event.inputs.timestamp == 'Yes' }}"
+        run: |
+           echo -e "\ntimestamp: $(date "+%d.%m.%Y %H:%M:%S") TZ:GMT" >> /tmp/atf/outfile.txt
+      - name: 'timestampcheck_failed'
+        if: "${{ github.event.inputs.timestamp != 'Yes' && github.event.inputs.timestamp != 'No' }}"
+        run: |
+           echo -e "\nTimestamp field should be only 'Yes' or 'No', so here's ASCII cow instead=)\n\n         (__)\n         (oo)\n  /-------\/\n / |     ||\n+  ||----||\n   ~~    ~~" >> /tmp/atf/outfile.txt
+      - uses: actions/upload-artifact@v2
+        with:
+          name: outfile
+          path: /tmp/atf/outfile.txt      
